@@ -143,7 +143,7 @@ const LoginForm = () => {
         </div>
 
         {/* Environment indicator */}
-        {process.env.REACT_APP_USE_MOCK === 'true' && (
+        {import.meta.env?.VITE_USE_MOCK !== 'false' && (
           <div className="text-center">
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
               Demo Mode - Using Mock Authentication

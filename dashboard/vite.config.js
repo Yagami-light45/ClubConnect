@@ -1,10 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { viteSourceLocator } from "@metagptx/vite-plugin-source-locator";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [viteSourceLocator({
-    prefix: "mgx",
-  }), react()],
+  plugins: [react()],
+  define: {
+    // Make process available in development
+    global: 'globalThis',
+  },
+  server: {
+    port: 3000, // Default React port
+    open: true
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
+  }
 })

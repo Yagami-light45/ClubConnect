@@ -90,51 +90,59 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
-  const register = async (userData) => {
+const register = async (userData) => {
     setLoading(true);
-
+    
     try {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-
-        // Fetch user data after registration
-        const userResponse = await fetch(`${API_URL}/api/auth/me`, {
+      let result;
+      
+      if (USE_MOCK) {
+        result = await mockAuthService.register(userData);
+      } else {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+          method: 'POST',
           headers: {
-            Authorization: `Bearer ${data.token}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json'
           },
+          body: JSON.stringify(userData)
         });
 
-        if (userResponse.ok) {
-          const user = await userResponse.json();
-          localStorage.setItem("userData", JSON.stringify(user));
-          setCurrentUser(user);
+        const data = await response.json();
+        
+        if (response.ok) {
+          result = { success: true, token: data.token };
+          // Fetch user data after registration
+          const userResponse = await fetch(`${API_URL}/api/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${data.token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (userResponse.ok) {
+            const user = await userResponse.json();
+            result.user = user;
+          }
+        } else {
+          result = { success: false, error: data.message };
         }
+      }
 
+      if (result.success) {
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('userData', JSON.stringify(result.user));
+        setCurrentUser(result.user);
         return { success: true };
       } else {
-        return { success: false, error: data.message || "Registration failed" };
+        return { success: false, error: result.error || 'Registration failed' };
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      return {
-        success: false,
-        error: "Network error. Please check if the server is running.",
-      };
+      console.error('Registration error:', error);
+      return { success: false, error: 'Network error. Please try again.' };
     } finally {
       setLoading(false);
     }
   };
-
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userData");
