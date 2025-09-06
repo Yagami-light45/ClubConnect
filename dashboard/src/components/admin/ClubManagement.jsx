@@ -1,18 +1,42 @@
+// src/components/ClubManagement.jsx
 import React, { useState } from 'react';
-import { mockClubs, mockUsers } from '../../data/mockData';
-import { CLUB_STATUS, USER_ROLES } from '../../utils/constants';
+import { mockClubs, CLUB_STATUS } from '../data/mockData';
 
 const ClubManagement = () => {
+  const [clubs, setClubs] = useState(mockClubs);
   const [selectedClub, setSelectedClub] = useState(null);
-  const [showAssignHead, setShowAssignHead] = useState(false);
-  
-  const availableHeads = mockUsers.filter(user => user.role === USER_ROLES.CLUB_HEAD);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleApproveClub = (clubId) => {
+    setClubs(clubs.map(club => 
+      club.id === clubId ? { ...club, status: CLUB_STATUS.APPROVED } : club
+    ));
+  };
+
+  const handleRejectClub = (clubId) => {
+    setClubs(clubs.map(club => 
+      club.id === clubId ? { ...club, status: CLUB_STATUS.REJECTED } : club
+    ));
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case CLUB_STATUS.APPROVED:
+        return 'bg-green-100 text-green-800';
+      case CLUB_STATUS.PENDING:
+        return 'bg-yellow-100 text-yellow-800';
+      case CLUB_STATUS.REJECTED:
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Club Management</h1>
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+        <h1 className="text-2xl font-semibold text-gray-800">Club Management</h1>
+        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
           Add New Club
         </button>
       </div>
@@ -28,7 +52,7 @@ const ClubManagement = () => {
                 Category
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Club Head
+                Members
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -39,48 +63,54 @@ const ClubManagement = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {mockClubs.map((club) => (
-              <tr key={club.id}>
+            {clubs.map((club) => (
+              <tr key={club.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">{club.name}</div>
-                    <div className="text-sm text-gray-500">{club.description}</div>
+                  <div className="flex items-center">
+                    <img className="h-10 w-10 rounded-full object-cover" src={club.image} alt="" />
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">{club.name}</div>
+                      <div className="text-sm text-gray-500">{club.headName || 'No Head Assigned'}</div>
+                    </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                    {club.category}
-                  </span>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {club.category}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {club.headName || 'Not Assigned'}
+                  {club.currentMembers}/{club.maxMembers}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    club.status === CLUB_STATUS.APPROVED 
-                      ? 'bg-green-100 text-green-800'
-                      : club.status === CLUB_STATUS.PENDING
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {club.status.charAt(0).toUpperCase() + club.status.slice(1)}
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(club.status)}`}>
+                    {club.status}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                  {!club.headId && (
-                    <button
-                      onClick={() => {
-                        setSelectedClub(club);
-                        setShowAssignHead(true);
-                      }}
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Assign Head
-                    </button>
-                  )}
-                  <button className="text-gray-600 hover:text-gray-900">
-                    Edit
+                  <button
+                    onClick={() => {
+                      setSelectedClub(club);
+                      setShowModal(true);
+                    }}
+                    className="text-indigo-600 hover:text-indigo-900"
+                  >
+                    View
                   </button>
+                  {club.status === CLUB_STATUS.PENDING && (
+                    <>
+                      <button
+                        onClick={() => handleApproveClub(club.id)}
+                        className="text-green-600 hover:text-green-900"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleRejectClub(club.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -88,33 +118,28 @@ const ClubManagement = () => {
         </table>
       </div>
 
-      {/* Assign Head Modal */}
-      {showAssignHead && selectedClub && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Assign Club Head for {selectedClub.name}
-            </h3>
-            <div className="space-y-3">
-              {availableHeads.map((head) => (
-                <div key={head.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <div className="font-medium text-gray-900">{head.name}</div>
-                    <div className="text-sm text-gray-500">{head.email}</div>
-                  </div>
-                  <button className="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">
-                    Assign
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 flex justify-end space-x-3">
-              <button
-                onClick={() => setShowAssignHead(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                Cancel
-              </button>
+      {/* Modal */}
+      {showModal && selectedClub && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">{selectedClub.name}</h3>
+              <div className="space-y-3 text-sm text-gray-600">
+                <p><strong>Description:</strong> {selectedClub.description}</p>
+                <p><strong>Category:</strong> {selectedClub.category}</p>
+                <p><strong>Requirements:</strong> {selectedClub.requirements}</p>
+                <p><strong>Max Members:</strong> {selectedClub.maxMembers}</p>
+                <p><strong>Current Members:</strong> {selectedClub.currentMembers}</p>
+                <p><strong>Created:</strong> {new Date(selectedClub.createdAt).toLocaleDateString()}</p>
+              </div>
+              <div className="flex justify-end space-x-2 mt-6">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

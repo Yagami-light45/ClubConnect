@@ -1,95 +1,232 @@
-import React from 'react';
-import { mockClubs } from '../../data/mockData';
-import { CLUB_STATUS } from '../../utils/constants';
+// src/components/admin/AdminDashboard.jsx
+import React, { useState, useEffect } from 'react';
+import StatsCard from '../StatsCard';
+import { mockStats, mockClubs, mockApplications, CLUB_STATUS, APPLICATION_STATUS } from '../../data/mockData';
 
-const AdminDashboard = () => {
-  const pendingClubs = mockClubs.filter(club => club.status === CLUB_STATUS.PENDING);
-  const approvedClubs = mockClubs.filter(club => club.status === CLUB_STATUS.APPROVED);
+const AdminDashboard = ({ currentView, setCurrentView }) => {
+  const [clubs, setClubs] = useState(mockClubs);
+  const [applications] = useState(mockApplications);
+  const [selectedClub, setSelectedClub] = useState(null);
+
+  // Calculate real-time stats
+  const stats = [
+    {
+      ...mockStats[0],
+      value: clubs.length.toString()
+    },
+    {
+      ...mockStats[1], 
+      value: applications.filter(app => app.status === APPLICATION_STATUS.PENDING).length.toString()
+    },
+    {
+      ...mockStats[2],
+      value: clubs.reduce((sum, club) => sum + club.currentMembers, 0).toString()
+    },
+    {
+      ...mockStats[3],
+      value: clubs.filter(club => club.status === CLUB_STATUS.PENDING).length.toString()
+    }
+  ];
+
+  const approveClub = (clubId) => {
+    setClubs(clubs.map(club => 
+      club.id === clubId 
+        ? { ...club, status: CLUB_STATUS.APPROVED, isRecruiting: true }
+        : club
+    ));
+  };
+
+  const rejectClub = (clubId) => {
+    setClubs(clubs.map(club => 
+      club.id === clubId 
+        ? { ...club, status: CLUB_STATUS.REJECTED }
+        : club
+    ));
+  };
+
+  const assignHead = (clubId, headName) => {
+    if (!headName.trim()) return;
+    
+    setClubs(clubs.map(club => 
+      club.id === clubId 
+        ? { ...club, headName: headName, headId: Date.now() } // Mock head ID
+        : club
+    ));
+    setSelectedClub(null);
+  };
+
+  if (currentView === 'club-management') {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-gray-800">Club Management</h1>
+          <button
+            onClick={() => setCurrentView('dashboard')}
+            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {clubs.map((club) => (
+            <div key={club.id} className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-lg font-medium text-gray-800">{club.name}</h3>
+                <span className={`px-2 py-1 text-xs rounded-full ${
+                  club.status === CLUB_STATUS.APPROVED 
+                    ? 'bg-green-100 text-green-800'
+                    : club.status === CLUB_STATUS.PENDING
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {club.status}
+                </span>
+              </div>
+              
+              <p className="text-sm text-gray-600 mb-3">{club.description}</p>
+              <p className="text-xs text-gray-500 mb-3">Category: {club.category}</p>
+              
+              <div className="mb-3">
+                <p className="text-sm">
+                  <span className="font-medium">Head:</span> 
+                  {club.headName ? (
+                    <span className="text-green-600 ml-1">{club.headName}</span>
+                  ) : (
+                    <span className="text-red-600 ml-1">Not Assigned</span>
+                  )}
+                </p>
+                <p className="text-sm">
+                  <span className="font-medium">Members:</span> {club.currentMembers}/{club.maxMembers}
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                {club.status === CLUB_STATUS.PENDING && (
+                  <>
+                    <button
+                      onClick={() => approveClub(club.id)}
+                      className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => rejectClub(club.id)}
+                      className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+                
+                {!club.headName && (
+                  <button
+                    onClick={() => setSelectedClub(club.id)}
+                    className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                  >
+                    Assign Head
+                  </button>
+                )}
+              </div>
+              
+              {selectedClub === club.id && (
+                <div className="mt-3 p-3 bg-gray-50 rounded">
+                  <input
+                    type="text"
+                    placeholder="Enter head name"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded mb-2"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        assignHead(club.id, e.target.value);
+                      }
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        const input = e.target.parentElement.previousElementSibling;
+                        assignHead(club.id, input.value);
+                      }}
+                      className="px-3 py-1 bg-green-500 text-white text-xs rounded"
+                    >
+                      Assign
+                    </button>
+                    <button
+                      onClick={() => setSelectedClub(null)}
+                      className="px-3 py-1 bg-gray-500 text-white text-xs rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-      </div>
-
+      <h1 className="text-2xl font-semibold text-gray-800">Admin Dashboard</h1>
+      
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Clubs</p>
-              <p className="text-2xl font-bold text-gray-900">{mockClubs.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Approved Clubs</p>
-              <p className="text-2xl font-bold text-gray-900">{approvedClubs.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending Approval</p>
-              <p className="text-2xl font-bold text-gray-900">{pendingClubs.length}</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <StatsCard 
+            key={index}
+            icon={stat.icon}
+            title={stat.title}
+            value={stat.value}
+            change={stat.change}
+          />
+        ))}
+      </div>
+      
+      {/* Quick Actions */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h2 className="text-lg font-medium text-gray-800 mb-4">Quick Actions</h2>
+        <button
+          onClick={() => setCurrentView('club-management')}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        >
+          Manage All Clubs
+        </button>
       </div>
 
-      {/* Pending Clubs */}
-      {pendingClubs.length > 0 && (
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Clubs Pending Approval</h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {pendingClubs.map((club) => (
-                <div key={club.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">{club.name}</h3>
-                      <p className="text-gray-600 mt-1">{club.description}</p>
-                      <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full mt-2">
-                        {club.category}
-                      </span>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">
-                        Approve
-                      </button>
-                      <button className="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700">
-                        Reject
-                      </button>
-                    </div>
-                  </div>
+      {/* Pending Club Approvals */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h2 className="text-lg font-medium text-gray-800 mb-4">Pending Club Approvals</h2>
+        <div className="space-y-4">
+          {clubs.filter(club => club.status === CLUB_STATUS.PENDING).length > 0 ? (
+            clubs.filter(club => club.status === CLUB_STATUS.PENDING).map(club => (
+              <div key={club.id} className="flex justify-between items-center p-4 border rounded-md">
+                <div>
+                  <p className="font-semibold">{club.name}</p>
+                  <p className="text-sm text-gray-600">{club.category}</p>
                 </div>
-              ))}
-            </div>
-          </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => approveClub(club.id)}
+                    className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => rejectClub(club.id)}
+                    className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500">No pending club approvals.</p>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
