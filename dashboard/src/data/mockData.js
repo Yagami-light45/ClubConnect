@@ -1,261 +1,231 @@
 // src/data/mockData.js
-export const ROLES = {
-  ADMIN: 'ADMIN',
-  CLUB_HEAD: 'CLUB_HEAD',
-  STUDENT: 'STUDENT'
-};
 
+export const ROLES = {
+  ADMIN: 'admin',
+  CLUB_HEAD: 'clubhead',
+  STUDENT: 'student'
+};
 export const APPLICATION_STATUS = {
-  PENDING: 'PENDING',
-  UNDER_REVIEW: 'UNDER_REVIEW',
-  ACCEPTED: 'ACCEPTED',
-  REJECTED: 'REJECTED'
+  PENDING: "pending",
+  APPROVED: "approved",
+  REJECTED: "rejected",
 };
 
 export const CLUB_STATUS = {
-  PENDING: 'PENDING',
-  APPROVED: 'APPROVED',
-  REJECTED: 'REJECTED'
+  ACTIVE: "active",
+  RECRUITING: "recruiting",
+  INACTIVE: "inactive",
 };
 
-// Mock Clubs Data
+// Demo credentials for testing
+export const DEMO_USERS = [
+  {
+    id: 1,
+    name: "Admin User",
+    email: "admin@college.edu",
+    password: "admin123", // In real app, this would be hashed
+    role: ROLES.ADMIN,
+    avatar: "https://ui-avatars.com/api/?name=Admin+User&background=3b82f6&color=white"
+  },
+  {
+    id: 2,
+    name: "Tech Club Head",
+    email: "tech.head@college.edu",
+    password: "tech123",
+    role: ROLES.CLUB_HEAD,
+    avatar: "https://ui-avatars.com/api/?name=Tech+Club+Head&background=10b981&color=white",
+    clubId: 1
+  },
+  {
+    id: 3,
+    name: "Drama Club Head",
+    email: "drama.head@college.edu",
+    password: "drama123",
+    role: ROLES.CLUB_HEAD,
+    avatar: "https://ui-avatars.com/api/?name=Drama+Club+Head&background=f59e0b&color=white",
+    clubId: 2
+  },
+  {
+    id: 4,
+    name: "John Student",
+    email: "john.student@college.edu",
+    password: "student123",
+    role: ROLES.STUDENT,
+    avatar: "https://ui-avatars.com/api/?name=John+Student&background=8b5cf6&color=white"
+  }
+];
+
+export const mockUsers = [
+  {
+    id: 1,
+    name: "Alice Johnson",
+    email: "alice@college.edu",
+    role: "student",
+    status: "active",
+    joinedDate: "2024-01-15",
+    clubs: ["Tech Club", "Photography Club"]
+  },
+  {
+    id: 2,
+    name: "Bob Smith", 
+    email: "bob@college.edu",
+    role: "clubhead",
+    status: "active",
+    joinedDate: "2023-09-01",
+    clubs: ["Drama Club"]
+  },
+  {
+    id: 3,
+    name: "Carol Davis",
+    email: "carol@college.edu", 
+    role: "student",
+    status: "active",
+    joinedDate: "2024-02-20",
+    clubs: ["Music Club"]
+  }
+];
+export const mockStats = {
+  totalUsers: 120,
+  activeClubs: 8,
+  totalApplications: 45,
+  approvedApplications: 20,
+  pendingApplications: 15,
+  rejectedApplications: 10,
+};
 export const mockClubs = [
   {
     id: 1,
-    name: 'Tech Innovation Club',
-    description: 'A club focused on emerging technologies and innovation',
-    category: 'Technical',
-    status: CLUB_STATUS.APPROVED,
+    name: "Tech Club",
+    description: "Programming and technology enthusiasts",
+    category: "Technical",
+    head: "Tech Club Head",
     headId: 2,
-    headName: 'Tech Club Head',
+    members: 45,
     maxMembers: 50,
-    currentMembers: 23,
-    requirements: 'Basic programming knowledge preferred',
-    image: 'https://via.placeholder.com/300x200?text=Tech+Club',
-    createdAt: '2024-01-15',
-    isRecruiting: true
+    status: "active",
+    requirements: "Basic programming knowledge preferred",
+    meetingSchedule: "Fridays 4:00 PM",
+    location: "Computer Lab"
   },
   {
     id: 2,
-    name: 'Drama Society',
-    description: 'Explore the world of theater and performing arts',
-    category: 'Arts',
-    status: CLUB_STATUS.APPROVED,
+    name: "Drama Club",
+    description: "Theater and performing arts",
+    category: "Cultural", 
+    head: "Drama Club Head",
     headId: 3,
-    headName: 'Drama Club Head',
-    maxMembers: 30,
-    currentMembers: 18,
-    requirements: 'Passion for acting and theater',
-    image: 'https://via.placeholder.com/300x200?text=Drama+Club',
-    createdAt: '2024-01-10',
-    isRecruiting: true
+    members: 30,
+    maxMembers: 40,
+    status: "active",
+    requirements: "Interest in acting and theater",
+    meetingSchedule: "Wednesdays 3:30 PM",
+    location: "Auditorium"
   },
   {
     id: 3,
-    name: 'Photography Club',
-    description: 'Capture moments and learn advanced photography techniques',
-    category: 'Creative',
-    status: CLUB_STATUS.PENDING,
-    headId: null,
-    headName: null,
-    maxMembers: 25,
-    currentMembers: 0,
-    requirements: 'Own camera equipment preferred',
-    image: 'https://via.placeholder.com/300x200?text=Photo+Club',
-    createdAt: '2024-02-01',
-    isRecruiting: false
+    name: "Photography Club",
+    description: "Capture moments and learn photography",
+    category: "Creative",
+    head: "Sarah Wilson",
+    headId: 5,
+    members: 25,
+    maxMembers: 35,
+    status: "recruiting",
+    requirements: "Own camera or smartphone",
+    meetingSchedule: "Saturdays 2:00 PM", 
+    location: "Art Room"
   }
 ];
 
-// Mock Applications Data
-export const mockApplications = [
-  {
-    id: 1,
-    studentId: 4,
-    studentName: 'John Doe',
-    studentEmail: 'john.student@college.edu',
-    clubId: 1,
-    clubName: 'Tech Innovation Club',
-    status: APPLICATION_STATUS.PENDING,
-    appliedAt: '2024-02-10T10:00:00Z',
-    responses: {
-      'Why do you want to join?': 'I am passionate about technology and want to contribute to innovative projects.',
-      'Previous experience': 'Built several web applications using React and Node.js',
-      'Time commitment': 'Can dedicate 10-15 hours per week'
-    },
-    resumeUrl: null
-  },
-  {
-    id: 2,
-    studentId: 5,
-    studentName: 'Jane Smith',
-    studentEmail: 'jane.student@college.edu',
-    clubId: 1,
-    clubName: 'Tech Innovation Club',
-    status: APPLICATION_STATUS.UNDER_REVIEW,
-    appliedAt: '2024-02-08T14:30:00Z',
-    responses: {
-      'Why do you want to join?': 'I want to learn new technologies and work on real-world projects.',
-      'Previous experience': 'Completed several online courses in Python and machine learning',
-      'Time commitment': 'Can dedicate 8-12 hours per week'
-    },
-    resumeUrl: null
-  },
-  {
-    id: 3,
-    studentId: 4,
-    studentName: 'John Doe',
-    studentEmail: 'john.student@college.edu',
-    clubId: 2,
-    clubName: 'Drama Society',
-    status: APPLICATION_STATUS.ACCEPTED,
-    appliedAt: '2024-01-25T16:00:00Z',
-    responses: {
-      'Acting experience': 'Participated in high school theater productions for 3 years',
-      'Favorite genre': 'Contemporary drama and classical theater',
-      'Time availability': 'Available for evening rehearsals and weekend performances'
-    },
-    resumeUrl: null
-  }
-];
-
-// Mock Recruitment Drives
 export const mockRecruitmentDrives = [
   {
     id: 1,
     clubId: 1,
-    title: 'Spring 2024 Recruitment',
-    description: 'Looking for passionate tech enthusiasts to join our innovation projects',
-    startDate: '2024-02-01',
-    endDate: '2024-02-28',
-    maxApplications: 20,
-    currentApplications: 12,
-    isActive: true,
-    questions: [
-      {
-        id: 1,
-        question: 'Why do you want to join?',
-        type: 'textarea',
-        required: true
-      },
-      {
-        id: 2,
-        question: 'Previous experience',
-        type: 'textarea',
-        required: false
-      },
-      {
-        id: 3,
-        question: 'Time commitment',
-        type: 'text',
-        required: true
-      }
-    ]
+    clubName: "Tech Club",
+    title: "Winter Recruitment 2024",
+    description: "Looking for passionate programmers and tech enthusiasts",
+    startDate: "2024-01-10",
+    endDate: "2024-01-31",
+    status: "active",
+    applicants: 23,
+    maxPositions: 15,
+    requirements: ["Basic programming skills", "Commitment to attend meetings", "Team player attitude"]
   },
   {
     id: 2,
-    clubId: 2,
-    title: 'Winter Drama Auditions',
-    description: 'Auditions for our upcoming winter production',
-    startDate: '2024-01-20',
-    endDate: '2024-02-15',
-    maxApplications: 15,
-    currentApplications: 8,
-    isActive: true,
-    questions: [
-      {
-        id: 1,
-        question: 'Acting experience',
-        type: 'textarea',
-        required: true
-      },
-      {
-        id: 2,
-        question: 'Favorite genre',
-        type: 'text',
-        required: false
-      },
-      {
-        id: 3,
-        question: 'Time availability',
-        type: 'textarea',
-        required: true
-      }
-    ]
+    clubId: 2, 
+    clubName: "Drama Club",
+    title: "Spring Theater Auditions",
+    description: "Auditions for upcoming spring theater production",
+    startDate: "2024-02-01",
+    endDate: "2024-02-15", 
+    status: "active",
+    applicants: 18,
+    maxPositions: 12,
+    requirements: ["Previous acting experience preferred", "Flexible schedule", "Comfortable performing"]
   }
 ];
 
-// Mock Notifications
+export const mockApplications = [
+  {
+    id: 1,
+    studentId: 4,
+    studentName: "John Student",
+    studentEmail: "john.student@college.edu",
+    clubId: 1,
+    clubName: "Tech Club",
+    recruitmentId: 1,
+    applicationDate: "2024-01-12",
+    status: "pending",
+    motivation: "I'm passionate about programming and want to learn more about web development.",
+    experience: "I have basic knowledge of JavaScript and Python from coursework.",
+    skills: ["JavaScript", "Python", "HTML/CSS"]
+  },
+  {
+    id: 2,
+    studentId: 4,
+    studentName: "John Student", 
+    studentEmail: "john.student@college.edu",
+    clubId: 2,
+    clubName: "Drama Club",
+    recruitmentId: 2,
+    applicationDate: "2024-02-03",
+    status: "approved",
+    motivation: "I love theater and have been acting since high school.",
+    experience: "Participated in 3 high school plays, lead role in Romeo and Juliet.",
+    skills: ["Acting", "Voice projection", "Stage presence"]
+  }
+];
+
 export const mockNotifications = [
   {
     id: 1,
     userId: 4,
-    title: 'Application Status Update',
-    message: 'Your application to Drama Society has been accepted!',
-    type: 'success',
+    title: "Application Approved!",
+    message: "Your application to Drama Club has been approved. Welcome to the club!",
+    type: "success",
+    timestamp: "2024-02-05T10:30:00Z",
     read: false,
-    createdAt: '2024-02-12T09:00:00Z'
+    actionUrl: "/applications"
   },
   {
     id: 2,
     userId: 4,
-    title: 'New Club Available',
-    message: 'Photography Club is now accepting applications',
-    type: 'info',
-    read: true,
-    createdAt: '2024-02-10T14:00:00Z'
+    title: "New Recruitment Open",
+    message: "Photography Club is now accepting new members. Apply now!",
+    type: "info", 
+    timestamp: "2024-02-04T14:15:00Z",
+    read: false,
+    actionUrl: "/browse-clubs"
   },
   {
     id: 3,
-    userId: 2,
-    title: 'New Application Received',
-    message: 'John Doe has applied to Tech Innovation Club',
-    type: 'info',
-    read: false,
-    createdAt: '2024-02-10T10:30:00Z'
-  }
-];
-
-// Stats for dashboard
-export const mockStats = [
-  {
-    title: 'Total Clubs',
-    value: '12',
-    change: '+2',
-    trend: 'up',
-    icon: {
-      path: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
-      bgColor: 'bg-blue-500'
-    }
-  },
-  {
-    title: 'Active Applications',
-    value: '156',
-    change: '+12',
-    trend: 'up',
-    icon: {
-      path: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-      bgColor: 'bg-green-500'
-    }
-  },
-  {
-    title: 'Club Members',
-    value: '2,341',
-    change: '+198',
-    trend: 'up',
-    icon: {
-      path: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z',
-      bgColor: 'bg-purple-500'
-    }
-  },
-  {
-    title: 'Pending Approvals',
-    value: '23',
-    change: '-5',
-    trend: 'down',
-    icon: {
-      path: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-      bgColor: 'bg-yellow-500'
-    }
+    userId: 4,
+    title: "Application Under Review",
+    message: "Your application to Tech Club is currently being reviewed.",
+    type: "info",
+    timestamp: "2024-01-13T09:00:00Z",
+    read: true,
+    actionUrl: "/applications"
   }
 ];

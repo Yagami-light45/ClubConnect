@@ -1,53 +1,12 @@
 // src/contexts/AuthContext.jsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
-
-// Mock users for demonstration
-const mockUsers = [
-  { 
-    id: 1, 
-    email: 'admin@college.edu', 
-    password: 'admin123', 
-    role: 'ADMIN', 
-    name: 'System Admin' 
-  },
-  { 
-    id: 2, 
-    email: 'tech.head@college.edu', 
-    password: 'tech123', 
-    role: 'CLUB_HEAD', 
-    name: 'Tech Club Head',
-    clubId: 1 
-  },
-  { 
-    id: 3, 
-    email: 'drama.head@college.edu', 
-    password: 'drama123', 
-    role: 'CLUB_HEAD', 
-    name: 'Drama Club Head',
-    clubId: 2 
-  },
-  { 
-    id: 4, 
-    email: 'john.student@college.edu', 
-    password: 'student123', 
-    role: 'STUDENT', 
-    name: 'John Doe' 
-  },
-  { 
-    id: 5, 
-    email: 'jane.student@college.edu', 
-    password: 'student123', 
-    role: 'STUDENT', 
-    name: 'Jane Smith' 
-  }
-];
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -56,50 +15,152 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // API base URL (from Vite env or fallback)
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+  // Check if user is logged in on app load
   useEffect(() => {
-    // Check if user is already logged in (stored in localStorage)
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("userData");
+
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData);
+        verifyToken(token, user);
+      } catch (error) {
+        console.error("Invalid stored user data:", error);
+        logout();
+      }
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
-  // useEffect(() => {
-  //   const userEmail="gsgesi/pcom";
-  //    const user= await db.users.find(u => u.email === userEmail);
-  //     if(!user){
-  //       return Response.json({ success: false, error: 'User not found' });
-  //     }else{
-  //       return Response.json({ success: true, user });// user without password
-  //     }
-  // }, [currentUser]);
-  const login = async (email, password) => {
-    const user = mockUsers.find(u => u.email === email && u.password === password);
-    if (user) {
-      const userWithoutPassword = { ...user };
-      delete userWithoutPassword.password;
-      setCurrentUser(userWithoutPassword);
-      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-      return { success: true, user: userWithoutPassword };
+
+  const verifyToken = async (token, userData) => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        setCurrentUser(user);
+      } else {
+        logout(); // Token invalid
+      }
+    } catch (error) {
+      console.error("Error verifying token:", error);
+      // Fallback: use stored data temporarily if server is down
+      setCurrentUser(userData);
+    } finally {
+      setLoading(false);
     }
-    return { success: false, error: 'Invalid credentials' };
+  };
+
+  const login = async (email, password) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userData", JSON.stringify(data.user));
+        setCurrentUser(data.user);
+        return { success: true };
+      } else {
+        return { success: false, error: data.message || "Login failed" };
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      return {
+        success: false,
+        error: "Network error. Please check if the server is running.",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const register = async (userData) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+
+        // Fetch user data after registration
+        const userResponse = await fetch(`${API_URL}/api/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${data.token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (userResponse.ok) {
+          const user = await userResponse.json();
+          localStorage.setItem("userData", JSON.stringify(user));
+          setCurrentUser(user);
+        }
+
+        return { success: true };
+      } else {
+        return { success: false, error: data.message || "Registration failed" };
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      return {
+        success: false,
+        error: "Network error. Please check if the server is running.",
+      };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userData");
     setCurrentUser(null);
-    localStorage.removeItem('currentUser');
+  };
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token
+      ? {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        }
+      : { "Content-Type": "application/json" };
   };
 
   const value = {
     currentUser,
     login,
+    register,
     logout,
-    loading
+    loading,
+    getAuthHeaders,
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
   );
 };

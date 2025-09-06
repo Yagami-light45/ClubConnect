@@ -1,12 +1,15 @@
 // src/components/auth/LoginForm.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import RegisterForm from './RegisterForm';
+import { DEMO_USERS } from '../../data/mockData';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -21,17 +24,34 @@ const LoginForm = () => {
     setLoading(false);
   };
 
-  const demoCredentials = [
-    { role: 'Admin', email: 'admin@college.edu', password: 'admin123' },
-    { role: 'Tech Club Head', email: 'tech.head@college.edu', password: 'tech123' },
-    { role: 'Drama Club Head', email: 'drama.head@college.edu', password: 'drama123' },
-    { role: 'Student', email: 'john.student@college.edu', password: 'student123' }
-  ];
+  const demoCredentials = DEMO_USERS.map(user => ({
+    role: user.role === 'admin' ? 'Admin' : 
+          user.role === 'clubhead' ? user.name :
+          'Student',
+    email: user.email,
+    password: user.password
+  }));
 
   const fillCredentials = (email, password) => {
     setEmail(email);
     setPassword(password);
+    setError(''); // Clear any existing errors
   };
+
+  const switchToRegister = () => {
+    setShowRegister(true);
+    setError('');
+  };
+
+  const switchToLogin = () => {
+    setShowRegister(false);
+    setError('');
+  };
+
+  // Show registration form if requested
+  if (showRegister) {
+    return <RegisterForm switchToLogin={switchToLogin} />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -90,24 +110,46 @@ const LoginForm = () => {
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={switchToRegister}
+              className="text-indigo-600 hover:text-indigo-500 text-sm"
+            >
+              Don't have an account? Sign up
+            </button>
+          </div>
         </form>
 
         {/* Demo Credentials */}
-        <div className="mt-6 bg-gray-50 p-4 rounded-md">
+        <div className="mt-6 bg-gray-50 p-4 rounded-md border">
           <h3 className="text-sm font-medium text-gray-700 mb-3">Demo Credentials:</h3>
           <div className="space-y-2">
             {demoCredentials.map((cred, index) => (
               <button
                 key={index}
                 onClick={() => fillCredentials(cred.email, cred.password)}
-                className="w-full text-left p-2 text-xs bg-white border border-gray-200 rounded hover:bg-gray-50"
+                className="w-full text-left p-2 text-xs bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
               >
                 <div className="font-medium text-gray-800">{cred.role}</div>
                 <div className="text-gray-600">{cred.email} / {cred.password}</div>
               </button>
             ))}
           </div>
+          <p className="text-xs text-gray-500 mt-3">
+            Click any credential above to auto-fill the form
+          </p>
         </div>
+
+        {/* Environment indicator */}
+        {process.env.REACT_APP_USE_MOCK === 'true' && (
+          <div className="text-center">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              Demo Mode - Using Mock Authentication
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

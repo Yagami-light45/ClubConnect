@@ -13,17 +13,48 @@ const StudentDashboard = ({ currentView, setCurrentView }) => {
   const [applicationForm, setApplicationForm] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Profile management state
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    name: '',
+    email: '',
+    branch: '',
+    year: '',
+    rollNumber: '',
+    phone: '',
+    bio: '',
+    skills: '',
+    interests: ''
+  });
+  const [profileSaving, setProfileSaving] = useState(false);
 
   // Initialize data on component mount
   useEffect(() => {
     try {
       setApplications(mockApplications || []);
+      
+      // Initialize profile form with current user data
+      if (currentUser) {
+        setProfileForm({
+          name: currentUser.name || '',
+          email: currentUser.email || '',
+          branch: currentUser.branch || '',
+          year: currentUser.year || '',
+          rollNumber: currentUser.rollNumber || '',
+          phone: currentUser.phone || '',
+          bio: currentUser.bio || '',
+          skills: currentUser.skills || '',
+          interests: currentUser.interests || ''
+        });
+      }
+      
       setLoading(false);
     } catch (err) {
       setError('Failed to load application data');
       setLoading(false);
     }
-  }, []);
+  }, [currentUser]);
 
   // Loading state
   if (loading) {
@@ -51,6 +82,48 @@ const StudentDashboard = ({ currentView, setCurrentView }) => {
       </div>
     );
   }
+
+  // Profile form handlers
+  const handleProfileChange = (field, value) => {
+    setProfileForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleProfileSave = async () => {
+    setProfileSaving(true);
+    
+    try {
+      // Simulate API call to save profile
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update the current user context (in a real app, this would be handled by the AuthContext)
+      // For now, we'll just simulate success
+      alert('Profile updated successfully!');
+      setIsEditingProfile(false);
+    } catch (err) {
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const cancelProfileEdit = () => {
+    // Reset form to original values
+    setProfileForm({
+      name: currentUser.name || '',
+      email: currentUser.email || '',
+      branch: currentUser.branch || '',
+      year: currentUser.year || '',
+      rollNumber: currentUser.rollNumber || '',
+      phone: currentUser.phone || '',
+      bio: currentUser.bio || '',
+      skills: currentUser.skills || '',
+      interests: currentUser.interests || ''
+    });
+    setIsEditingProfile(false);
+  };
 
   // Get student's applications with safety checks
   const studentApplications = applications.filter(app => 
@@ -176,6 +249,299 @@ const StudentDashboard = ({ currentView, setCurrentView }) => {
     setSelectedClub(null);
     setApplicationForm({});
   };
+
+  // Profile View
+  if (currentView === 'profile') {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-gray-800">My Profile</h1>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setCurrentView('dashboard')}
+              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+            >
+              Back to Dashboard
+            </button>
+            {!isEditingProfile && (
+              <button
+                onClick={() => setIsEditingProfile(true)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+              >
+                Edit Profile
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="p-6">
+            {isEditingProfile ? (
+              // Edit Profile Form
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={profileForm.name}
+                      onChange={(e) => handleProfileChange('name', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      value={profileForm.email}
+                      onChange={(e) => handleProfileChange('email', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Branch/Department
+                    </label>
+                    <select
+                      value={profileForm.branch}
+                      onChange={(e) => handleProfileChange('branch', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">Select Branch</option>
+                      <option value="Computer Science">Computer Science</option>
+                      <option value="Mechanical Engineering">Mechanical Engineering</option>
+                      <option value="Electrical Engineering">Electrical Engineering</option>
+                      <option value="Civil Engineering">Civil Engineering</option>
+                      <option value="Electronics & Communication">Electronics & Communication</option>
+                      <option value="Information Technology">Information Technology</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Year of Study
+                    </label>
+                    <select
+                      value={profileForm.year}
+                      onChange={(e) => handleProfileChange('year', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">Select Year</option>
+                      <option value="1st Year">1st Year</option>
+                      <option value="2nd Year">2nd Year</option>
+                      <option value="3rd Year">3rd Year</option>
+                      <option value="4th Year">4th Year</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Roll Number
+                    </label>
+                    <input
+                      type="text"
+                      value={profileForm.rollNumber}
+                      onChange={(e) => handleProfileChange('rollNumber', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={profileForm.phone}
+                      onChange={(e) => handleProfileChange('phone', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bio/About Me
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={profileForm.bio}
+                    onChange={(e) => handleProfileChange('bio', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Tell us about yourself..."
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Skills (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={profileForm.skills}
+                    onChange={(e) => handleProfileChange('skills', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g., JavaScript, Python, Leadership, Public Speaking"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Interests (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={profileForm.interests}
+                    onChange={(e) => handleProfileChange('interests', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g., Technology, Music, Sports, Photography"
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={cancelProfileEdit}
+                    disabled={profileSaving}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleProfileSave}
+                    disabled={profileSaving}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    {profileSaving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // View Profile
+              <div className="space-y-6">
+                <div className="flex items-center space-x-4 pb-6 border-b border-gray-200">
+                  <div className="h-20 w-20 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <span className="text-2xl font-semibold text-indigo-600">
+                      {(currentUser.name || 'U').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-800">
+                      {currentUser.name || 'Unknown User'}
+                    </h2>
+                    <p className="text-gray-600">
+                      {currentUser.branch || 'No branch specified'} • {currentUser.year || 'Year not specified'}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium text-gray-800">Personal Information</h3>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Email Address</span>
+                        <p className="text-gray-800">{currentUser.email || 'Not provided'}</p>
+                      </div>
+                      
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Roll Number</span>
+                        <p className="text-gray-800">{currentUser.rollNumber || 'Not provided'}</p>
+                      </div>
+                      
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Phone Number</span>
+                        <p className="text-gray-800">{currentUser.phone || 'Not provided'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium text-gray-800">Academic Information</h3>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Branch/Department</span>
+                        <p className="text-gray-800">{currentUser.branch || 'Not specified'}</p>
+                      </div>
+                      
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Year of Study</span>
+                        <p className="text-gray-800">{currentUser.year || 'Not specified'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {(currentUser.bio || currentUser.skills || currentUser.interests) && (
+                  <div className="space-y-4 pt-6 border-t border-gray-200">
+                    {currentUser.bio && (
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-800 mb-2">About Me</h3>
+                        <p className="text-gray-600 leading-relaxed">{currentUser.bio}</p>
+                      </div>
+                    )}
+                    
+                    {currentUser.skills && (
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-800 mb-2">Skills</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {currentUser.skills.split(',').map((skill, index) => (
+                            <span
+                              key={index}
+                              className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                            >
+                              {skill.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {currentUser.interests && (
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-800 mb-2">Interests</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {currentUser.interests.split(',').map((interest, index) => (
+                            <span
+                              key={index}
+                              className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full"
+                            >
+                              {interest.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {!currentUser.bio && !currentUser.skills && !currentUser.interests && (
+                  <div className="pt-6 border-t border-gray-200 text-center">
+                    <p className="text-gray-500 mb-4">Complete your profile to help clubs get to know you better!</p>
+                    <button
+                      onClick={() => setIsEditingProfile(true)}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                    >
+                      Complete Profile
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Club Browse View
   if (currentView === 'browse-clubs') {
@@ -441,7 +807,7 @@ const StudentDashboard = ({ currentView, setCurrentView }) => {
                     {app.status === APPLICATION_STATUS.ACCEPTED && (
                       <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <p className="text-sm text-green-800">
-                          🎉 Congratulations! You've been accepted to {app.clubName || 'the club'}. 
+                          Congratulations! You've been accepted to {app.clubName || 'the club'}. 
                           Check your email for next steps.
                         </p>
                       </div>
@@ -509,6 +875,19 @@ const StudentDashboard = ({ currentView, setCurrentView }) => {
                 My Applications
               </div>
               <p className="text-sm text-green-100 mt-1 ml-8">Track your application status</p>
+            </button>
+            
+            <button
+              onClick={() => setCurrentView('profile')}
+              className="w-full px-4 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-left"
+            >
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                My Profile
+              </div>
+              <p className="text-sm text-purple-100 mt-1 ml-8">View and edit your profile</p>
             </button>
           </div>
         </div>
