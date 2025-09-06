@@ -1,10 +1,14 @@
 // src/data/mockData.js
 
+// ========================
+// Constants & Enums
+// ========================
 export const ROLES = {
-  ADMIN: 'admin',
-  CLUB_HEAD: 'clubhead',
-  STUDENT: 'student'
+  ADMIN: "admin",
+  CLUB_HEAD: "clubhead",
+  STUDENT: "student",
 };
+
 export const APPLICATION_STATUS = {
   PENDING: "pending",
   APPROVED: "approved",
@@ -17,15 +21,18 @@ export const CLUB_STATUS = {
   INACTIVE: "inactive",
 };
 
-// Demo credentials for testing
+// ========================
+// Demo Users (with credentials for auth)
+// ========================
 export const DEMO_USERS = [
   {
     id: 1,
     name: "Admin User",
     email: "admin@college.edu",
-    password: "admin123", // In real app, this would be hashed
+    password: "admin123", // MOCK ONLY, do not use plain text in prod
     role: ROLES.ADMIN,
-    avatar: "https://ui-avatars.com/api/?name=Admin+User&background=3b82f6&color=white"
+    avatar:
+      "https://ui-avatars.com/api/?name=Admin+User&background=3b82f6&color=white",
   },
   {
     id: 2,
@@ -33,8 +40,9 @@ export const DEMO_USERS = [
     email: "tech.head@college.edu",
     password: "tech123",
     role: ROLES.CLUB_HEAD,
-    avatar: "https://ui-avatars.com/api/?name=Tech+Club+Head&background=10b981&color=white",
-    clubId: 1
+    avatar:
+      "https://ui-avatars.com/api/?name=Tech+Club+Head&background=10b981&color=white",
+    clubId: 1,
   },
   {
     id: 3,
@@ -42,8 +50,9 @@ export const DEMO_USERS = [
     email: "drama.head@college.edu",
     password: "drama123",
     role: ROLES.CLUB_HEAD,
-    avatar: "https://ui-avatars.com/api/?name=Drama+Club+Head&background=f59e0b&color=white",
-    clubId: 2
+    avatar:
+      "https://ui-avatars.com/api/?name=Drama+Club+Head&background=f59e0b&color=white",
+    clubId: 2,
   },
   {
     id: 4,
@@ -51,39 +60,100 @@ export const DEMO_USERS = [
     email: "john.student@college.edu",
     password: "student123",
     role: ROLES.STUDENT,
-    avatar: "https://ui-avatars.com/api/?name=John+Student&background=8b5cf6&color=white"
-  }
+    avatar:
+      "https://ui-avatars.com/api/?name=John+Student&background=8b5cf6&color=white",
+  },
 ];
 
+// ========================
+// Mock Auth Service
+// ========================
+export const mockAuthService = {
+  login: async (email, password) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const user = DEMO_USERS.find(
+      (u) => u.email === email && u.password === password
+    );
+
+    if (user) {
+      return {
+        success: true,
+        token: `mock-token-${user.id}-${Date.now()}`,
+        user: { ...user, password: undefined }, // never return password
+      };
+    }
+
+    return {
+      success: false,
+      error: "Invalid email or password",
+    };
+  },
+
+  register: async (userData) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    if (!userData.email || !userData.password || !userData.name) {
+      return {
+        success: false,
+        error: "All fields are required",
+      };
+    }
+
+    const newUser = {
+      id: Date.now(),
+      email: userData.email,
+      name: userData.name,
+      password: userData.password,
+      role: userData.role || ROLES.STUDENT,
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        userData.name
+      )}&background=8b5cf6&color=white`,
+    };
+
+    DEMO_USERS.push(newUser);
+
+    return {
+      success: true,
+      token: `mock-token-${newUser.id}`,
+      user: { ...newUser, password: undefined },
+    };
+  },
+};
+
+// ========================
+// Mock Data Sets
+// ========================
 export const mockUsers = [
   {
-    id: 1,
+    id: 101,
     name: "Alice Johnson",
     email: "alice@college.edu",
-    role: "student",
+    role: ROLES.STUDENT,
     status: "active",
     joinedDate: "2024-01-15",
-    clubs: ["Tech Club", "Photography Club"]
+    clubs: ["Tech Club", "Photography Club"],
   },
   {
-    id: 2,
-    name: "Bob Smith", 
+    id: 102,
+    name: "Bob Smith",
     email: "bob@college.edu",
-    role: "clubhead",
+    role: ROLES.CLUB_HEAD,
     status: "active",
     joinedDate: "2023-09-01",
-    clubs: ["Drama Club"]
+    clubs: ["Drama Club"],
   },
   {
-    id: 3,
+    id: 103,
     name: "Carol Davis",
-    email: "carol@college.edu", 
-    role: "student",
+    email: "carol@college.edu",
+    role: ROLES.STUDENT,
     status: "active",
     joinedDate: "2024-02-20",
-    clubs: ["Music Club"]
-  }
+    clubs: ["Music Club"],
+  },
 ];
+
 export const mockStats = {
   totalUsers: 120,
   activeClubs: 8,
@@ -92,6 +162,7 @@ export const mockStats = {
   pendingApplications: 15,
   rejectedApplications: 10,
 };
+
 export const mockClubs = [
   {
     id: 1,
@@ -102,24 +173,24 @@ export const mockClubs = [
     headId: 2,
     members: 45,
     maxMembers: 50,
-    status: "active",
+    status: CLUB_STATUS.ACTIVE,
     requirements: "Basic programming knowledge preferred",
     meetingSchedule: "Fridays 4:00 PM",
-    location: "Computer Lab"
+    location: "Computer Lab",
   },
   {
     id: 2,
     name: "Drama Club",
     description: "Theater and performing arts",
-    category: "Cultural", 
+    category: "Cultural",
     head: "Drama Club Head",
     headId: 3,
     members: 30,
     maxMembers: 40,
-    status: "active",
+    status: CLUB_STATUS.ACTIVE,
     requirements: "Interest in acting and theater",
     meetingSchedule: "Wednesdays 3:30 PM",
-    location: "Auditorium"
+    location: "Auditorium",
   },
   {
     id: 3,
@@ -130,11 +201,11 @@ export const mockClubs = [
     headId: 5,
     members: 25,
     maxMembers: 35,
-    status: "recruiting",
+    status: CLUB_STATUS.RECRUITING,
     requirements: "Own camera or smartphone",
-    meetingSchedule: "Saturdays 2:00 PM", 
-    location: "Art Room"
-  }
+    meetingSchedule: "Saturdays 2:00 PM",
+    location: "Art Room",
+  },
 ];
 
 export const mockRecruitmentDrives = [
@@ -143,27 +214,36 @@ export const mockRecruitmentDrives = [
     clubId: 1,
     clubName: "Tech Club",
     title: "Winter Recruitment 2024",
-    description: "Looking for passionate programmers and tech enthusiasts",
+    description:
+      "Looking for passionate programmers and tech enthusiasts",
     startDate: "2024-01-10",
     endDate: "2024-01-31",
     status: "active",
     applicants: 23,
     maxPositions: 15,
-    requirements: ["Basic programming skills", "Commitment to attend meetings", "Team player attitude"]
+    requirements: [
+      "Basic programming skills",
+      "Commitment to attend meetings",
+      "Team player attitude",
+    ],
   },
   {
     id: 2,
-    clubId: 2, 
+    clubId: 2,
     clubName: "Drama Club",
     title: "Spring Theater Auditions",
     description: "Auditions for upcoming spring theater production",
     startDate: "2024-02-01",
-    endDate: "2024-02-15", 
+    endDate: "2024-02-15",
     status: "active",
     applicants: 18,
     maxPositions: 12,
-    requirements: ["Previous acting experience preferred", "Flexible schedule", "Comfortable performing"]
-  }
+    requirements: [
+      "Previous acting experience preferred",
+      "Flexible schedule",
+      "Comfortable performing",
+    ],
+  },
 ];
 
 export const mockApplications = [
@@ -176,25 +256,28 @@ export const mockApplications = [
     clubName: "Tech Club",
     recruitmentId: 1,
     applicationDate: "2024-01-12",
-    status: "pending",
-    motivation: "I'm passionate about programming and want to learn more about web development.",
-    experience: "I have basic knowledge of JavaScript and Python from coursework.",
-    skills: ["JavaScript", "Python", "HTML/CSS"]
+    status: APPLICATION_STATUS.PENDING,
+    motivation:
+      "I'm passionate about programming and want to learn more about web development.",
+    experience:
+      "I have basic knowledge of JavaScript and Python from coursework.",
+    skills: ["JavaScript", "Python", "HTML/CSS"],
   },
   {
     id: 2,
     studentId: 4,
-    studentName: "John Student", 
+    studentName: "John Student",
     studentEmail: "john.student@college.edu",
     clubId: 2,
     clubName: "Drama Club",
     recruitmentId: 2,
     applicationDate: "2024-02-03",
-    status: "approved",
+    status: APPLICATION_STATUS.APPROVED,
     motivation: "I love theater and have been acting since high school.",
-    experience: "Participated in 3 high school plays, lead role in Romeo and Juliet.",
-    skills: ["Acting", "Voice projection", "Stage presence"]
-  }
+    experience:
+      "Participated in 3 high school plays, lead role in Romeo and Juliet.",
+    skills: ["Acting", "Voice projection", "Stage presence"],
+  },
 ];
 
 export const mockNotifications = [
@@ -202,21 +285,23 @@ export const mockNotifications = [
     id: 1,
     userId: 4,
     title: "Application Approved!",
-    message: "Your application to Drama Club has been approved. Welcome to the club!",
+    message:
+      "Your application to Drama Club has been approved. Welcome to the club!",
     type: "success",
     timestamp: "2024-02-05T10:30:00Z",
     read: false,
-    actionUrl: "/applications"
+    actionUrl: "/applications",
   },
   {
     id: 2,
     userId: 4,
     title: "New Recruitment Open",
-    message: "Photography Club is now accepting new members. Apply now!",
-    type: "info", 
+    message:
+      "Photography Club is now accepting new members. Apply now!",
+    type: "info",
     timestamp: "2024-02-04T14:15:00Z",
     read: false,
-    actionUrl: "/browse-clubs"
+    actionUrl: "/browse-clubs",
   },
   {
     id: 3,
@@ -226,6 +311,6 @@ export const mockNotifications = [
     type: "info",
     timestamp: "2024-01-13T09:00:00Z",
     read: true,
-    actionUrl: "/applications"
-  }
+    actionUrl: "/applications",
+  },
 ];

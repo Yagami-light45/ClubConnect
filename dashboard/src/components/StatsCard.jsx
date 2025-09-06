@@ -31,15 +31,7 @@ const StatsCard = ({ title, value, change, trend, icon }) => {
         <span className="text-2xl font-bold text-gray-800">{value || '0'}</span>
         {change && (
           <div className="flex items-center mt-2">
-            <span className={`text-sm font-medium ${
-              trend === 'up' ? 'text-green-600' : 
-              trend === 'down' ? 'text-red-600' : 
-              'text-gray-600'
-            }`}>
-              {trend === 'up' && '↗ '}
-              {trend === 'down' && '↘ '}
-              {change}
-            </span>
+            
           </div>
         )}
       </div>

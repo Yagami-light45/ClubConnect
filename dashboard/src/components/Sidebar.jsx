@@ -5,11 +5,12 @@ import {
     Users, 
     ClipboardList, 
     Settings, 
-    LogOut 
+    LogOut,
+    User 
 } from 'lucide-react';
 
 const Sidebar = ({ currentView, setCurrentView }) => {
-    const { currentUser, logout } = useAuth(); // ✅ Changed from 'user' to 'currentUser'
+    const { currentUser, logout } = useAuth();
 
     const menuItems = {
         admin: [
@@ -25,6 +26,7 @@ const Sidebar = ({ currentView, setCurrentView }) => {
         ],
         student: [
             { id: 'dashboard', label: 'Dashboard', icon: Home },
+            { id: 'profile', label: 'Profile', icon: User }, // <-- ADDED PROFILE LINK
             { id: 'applications', label: 'My Applications', icon: ClipboardList },
             { id: 'settings', label: 'Settings', icon: Settings }
         ]

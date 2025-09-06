@@ -16,7 +16,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // API base URL (from Vite env or fallback)
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
   // Check if user is logged in on app load
   useEffect(() => {
@@ -37,6 +38,13 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const verifyToken = async (token, userData) => {
+    if (USE_MOCK) {
+      // In mock mode, just use stored data
+      setCurrentUser(userData);
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`${API_URL}/api/auth/me`, {
         headers: {
@@ -64,6 +72,21 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
 
     try {
+      if (USE_MOCK) {
+        // Import mock service dynamically to avoid errors if not available
+        const { mockAuthService } = await import('../data/mockData');
+        const result = await mockAuthService.login(email, password);
+        
+        if (result.success) {
+          localStorage.setItem("token", result.token);
+          localStorage.setItem("userData", JSON.stringify(result.user));
+          setCurrentUser(result.user);
+          return { success: true };
+        } else {
+          return { success: false, error: result.error || "Login failed" };
+        }
+      }
+
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -90,13 +113,15 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-const register = async (userData) => {
+
+  const register = async (userData) => {
     setLoading(true);
     
     try {
       let result;
       
       if (USE_MOCK) {
+        const { mockAuthService } = await import('../data/mockData');
         result = await mockAuthService.register(userData);
       } else {
         const response = await fetch(`${API_URL}/api/auth/register`, {
@@ -143,6 +168,7 @@ const register = async (userData) => {
       setLoading(false);
     }
   };
+
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userData");
