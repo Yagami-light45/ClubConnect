@@ -14,7 +14,9 @@ const Recruitment = () => {
     questions: []
   });
 
-  const handleCreateDrive = () => {
+  const handleCreateDrive = async (e) => {
+     e.preventDefault();
+    setIsSubmitting(true);
     const drive = {
       id: Date.now(),
       clubId: 1, // Assuming current club
@@ -22,6 +24,8 @@ const Recruitment = () => {
       currentApplications: 0,
       isActive: true
     };
+    console.log('Environment VITE_API_URL:', import.meta.env.VITE_API_URL);
+    console.log('API baseURL:', api.defaults.baseURL);
     setDrives([...drives, drive]);
     setShowCreateModal(false);
     setNewDrive({

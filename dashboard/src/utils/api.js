@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-// Use import.meta.env for Vite (not process.env)
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// FIXED: Remove /api from the fallback URL since your backend routes already include it
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const api = axios.create({
-    baseURL: API_BASE,
+    baseURL: `${API_BASE}/api`, // Add /api here instead
     headers: {
         'Content-Type': 'application/json'
     }

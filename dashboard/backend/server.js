@@ -14,8 +14,8 @@ console.log('Attempting to connect to MongoDB...');
 console.log('MONGO_URI:', process.env.MONGO_URI ? 'Set (hidden for security)' : 'Not set');
 
 mongoose.connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-    socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
 })
     .then(() => {
         console.log('✅ MongoDB connected successfully');
