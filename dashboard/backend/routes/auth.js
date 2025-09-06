@@ -161,7 +161,48 @@ router.post('/create-test-user', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-// Add this temporary route - GET route so you can visit in browser
+// Add this to routes/auth.js
+router.get('/create-student-user', async (req, res) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    
+    const studentData = {
+      name: 'John Student',
+      email: 'john.student@college.edu', // Note the full email
+      password: 'student123',
+      role: 'student'
+    };
+
+    // Check if user already exists
+    let existingUser = await User.findOne({ email: studentData.email });
+    
+    if (existingUser) {
+      return res.json({ 
+        message: 'Student user already exists',
+        user: { email: existingUser.email, role: existingUser.role }
+      });
+    }
+
+    // Create new student user
+    let user = new User(studentData);
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(studentData.password, salt);
+    await user.save();
+    
+    res.json({ 
+      message: 'Student user created successfully',
+      credentials: {
+        email: studentData.email,
+        password: studentData.password,
+        role: studentData.role
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating student user:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 router.get('/create-demo-users', async (req, res) => {
   try {
     const bcrypt = require('bcryptjs');
@@ -187,7 +228,7 @@ router.get('/create-demo-users', async (req, res) => {
       },
       {
         name: 'Student User',
-        email: 'student@college.edu',
+        email: 'john.student@college.edu',
         password: 'student123',
         role: 'student'
       }

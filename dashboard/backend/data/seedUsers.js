@@ -1,3 +1,9 @@
+const ROLES = {
+    ADMIN: "admin",
+    CLUB_HEAD: "clubhead", 
+    STUDENT: "student"
+};
+
 const users = [
     {
         name: "Admin User",
@@ -34,4 +40,4 @@ const clubs = [
     }
 ];
 
-module.exports = { users, clubs };
+module.exports = { ROLES, users, clubs };
